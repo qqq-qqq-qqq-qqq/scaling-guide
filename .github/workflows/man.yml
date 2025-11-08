@@ -10,6 +10,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        job-number: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]  # 20 jobs
 
     steps:
     - name: Checkout repository
@@ -18,7 +21,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '20'   # Chọn phiên bản Node.js mong muốn
+        node-version: '20'
 
     - name: Install dependencies
       run: |
