@@ -1,0 +1,27 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'   # Chọn phiên bản Node.js mong muốn
+
+    - name: Install dependencies
+      run: |
+        npm install hpack colors
+
+    - name: Run 2.js
+      run: node 2.js GET https://vuihoc.vn/tin/thpt-hoan-vi-chinh-hop-to-hop-505.html 9999 16 399 1.txt --winter --full --http2 --query 1 --debug
