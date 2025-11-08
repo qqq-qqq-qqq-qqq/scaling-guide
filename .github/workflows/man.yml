@@ -28,4 +28,4 @@ jobs:
         npm install hpack colors
 
     - name: Run 2.js
-      run: node 2.js GET https://vuihoc.vn/tin/thpt-hoan-vi-chinh-hop-to-hop-505.html 9999 16 399 1.txt --winter --full --http2 --query 1 --debug
+      run: node 2.js GET https://ip-count.dstat.uk/ 9999 16 399 1.txt --winter --full --http2 --query 1 --debug
